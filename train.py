@@ -56,11 +56,11 @@ def main():
     NUM_EPOCHS = 100
     
     # 数据集路径
-    train_img_dir = "path/to/train/images"
-    train_label_dir = "path/to/train/labels"
-    val_img_dir = "path/to/val/images"
-    val_label_dir = "path/to/val/labels"
-    
+    train_img_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
+    train_label_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
+    val_img_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
+    val_label_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
+
     # 创建数据集和数据加载器
     train_dataset = VOCDataset(
         image_folder=train_img_dir,
