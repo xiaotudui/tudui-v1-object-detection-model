@@ -2,37 +2,24 @@ import torch.nn as nn
 
 
 class DetectionLoss(nn.Module):
-    def __init__(self, num_classes=20):
+    def __init__(self):
         super().__init__()
-        self.num_classes = num_classes
-        self.ce = nn.CrossEntropyLoss()  # 类别的交叉熵损失
-        self.mse = nn.MSELoss()  # 边界框的均方误差损失
-
-        # 可以调整这两个权重来平衡分类误差和定位误差
-        self.lambda_class = 1.0
-        self.lambda_box = 1.0
+        self.class_criterion = nn.BCEWithLogitsLoss()  # 用于类别预测
+        self.box_criterion = nn.MSELoss()  # 用于边界框预测
 
     def forward(self, predictions, targets):
-        """
-        计算检测损失：类别损失 + 边界框损失
-
-        Args:
-            predictions: (batch_size, num_classes + 4)
-                        前num_classes个是类别预测，后4个是边界框预测 [x, y, w, h]
-            targets: (batch_size, 5)
-                    [class_id, x, y, w, h]
-        """
-        # 1. 类别损失
-        class_pred = predictions[:, :self.num_classes]  # 类别预测
-        class_target = targets[:, 0].float()  # 目标类别
-        class_loss = self.ce(class_pred, class_target)
-
-        # 2. 边界框损失
-        box_pred = predictions[:, self.num_classes:]  # 预测的边界框
-        box_target = targets[:, 1:]  # 目标边界框
-        box_loss = self.mse(box_pred, box_target)
-
-        # 总损失
-        total_loss = self.lambda_class * class_loss + self.lambda_box * box_loss
-
+        # 分离类别预测和边界框预测
+        pred_classes = predictions[:, :20]  # 前20个是类别预测
+        pred_boxes = predictions[:, 20:]    # 后4个是边界框预测
+        
+        target_classes = targets[:, :20]    # 目标类别（one-hot）
+        target_boxes = targets[:, 20:]      # 目标边界框
+        
+        # 计算类别损失和边界框损失
+        class_loss = self.class_criterion(pred_classes, target_classes)
+        box_loss = self.box_criterion(pred_boxes, target_boxes)
+        
+        # 可以调整这些权重
+        total_loss = class_loss + box_loss
+        
         return total_loss

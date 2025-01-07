@@ -5,10 +5,11 @@ from torch.utils.data import Dataset
 
 
 class VOCDataset(Dataset):
-    def __init__(self, image_folder, label_folder, transform=None):
+    def __init__(self, image_folder, label_folder, transform=None, num_classes=20):
         self.image_folder = image_folder
         self.label_folder = label_folder
         self.transform = transform
+        self.num_classes = num_classes
         self.img_filenames = [f for f in os.listdir(self.image_folder) if f.endswith(('.jpg', '.jpeg', '.png'))]
 
     def __getitem__(self, index):
@@ -25,23 +26,23 @@ class VOCDataset(Dataset):
         label_filename = os.path.splitext(img_filename)[0] + ".txt"
         label_path = os.path.join(self.label_folder, label_filename)
 
-        # 读取YOLO格式的标签 [class_id, x_center, y_center, width, height]
-        boxes = []
+        # 初始化one-hot编码和边界框
+        class_label = torch.zeros(self.num_classes)
+        bbox = torch.zeros(4)  # [x, y, w, h]
+
         if os.path.exists(label_path):
             with open(label_path) as f:
-                for line in f.readlines():
-                    if line.strip():
-                        values = list(map(float, line.strip().split()))
-                        boxes.append(values)
-                        break
+                line = f.readline().strip()
+                if line:
+                    values = list(map(float, line.split()))
+                    class_id = int(values[0])
+                    class_label[class_id] = 1.0  # one-hot编码
+                    bbox = torch.tensor(values[1:])  # 边界框坐标
 
-        # 如果没有标注框，创建一个空的标注
-        if not boxes:
-            boxes = torch.zeros((0, 5))
-        else:
-            boxes = torch.tensor(boxes)
+        # 组合标签
+        target = torch.cat([class_label, bbox])
 
-        return image, boxes
+        return image, target
 
     def __len__(self):
         return len(self.img_filenames)
