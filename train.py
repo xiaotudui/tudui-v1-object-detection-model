@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from tqdm import tqdm
 from dataset import VOCDataset
 from model import TuduiModel
 from utils import get_transforms
@@ -11,7 +10,7 @@ from loss import DetectionLoss
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     total_loss = 0
-    for batch_idx, (images, targets) in enumerate(tqdm(dataloader)):
+    for batch_idx, (images, targets) in enumerate(dataloader):
         images, targets = images.to(device), targets.to(device)
         
         # 前向传播
@@ -37,7 +36,7 @@ def validate(model, dataloader, criterion, device):
     model.eval()
     total_loss = 0
     with torch.no_grad():
-        for images, targets in tqdm(dataloader):
+        for images, targets in dataloader:
             images, targets = images.to(device), targets.to(device)
             predictions = model(images)
             loss = criterion(predictions, targets)

@@ -33,6 +33,7 @@ class VOCDataset(Dataset):
                     if line.strip():
                         values = list(map(float, line.strip().split()))
                         boxes.append(values)
+                        break
 
         # 如果没有标注框，创建一个空的标注
         if not boxes:
