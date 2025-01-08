@@ -5,7 +5,7 @@ from dataset import VOCDataset
 from model import TuduiModel
 from utils import get_transforms
 from loss import DetectionLoss
-
+from torch.utils.tensorboard import SummaryWriter
 
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
@@ -55,10 +55,10 @@ def main():
     NUM_EPOCHS = 100
     
     # 数据集路径
-    train_img_dir = r"D:\xiaotudui\Dataset\VOC-2007\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
-    train_label_dir = r"D:\xiaotudui\Dataset\VOC-2007\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
-    val_img_dir = r"D:\xiaotudui\Dataset\VOC-2007\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
-    val_label_dir = r"D:\xiaotudui\Dataset\VOC-2007\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
+    train_img_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
+    train_label_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
+    val_img_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages"
+    val_label_dir = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\YOLO"
 
     # 创建数据集和数据加载器
     train_dataset = VOCDataset(
@@ -105,6 +105,9 @@ def main():
         verbose=True
     )
     
+    # Create TensorBoard writer
+    writer = SummaryWriter('runs/object_detection_experiment')
+    
     # 训练循环
     best_val_loss = float('inf')
     for epoch in range(NUM_EPOCHS):
@@ -118,6 +121,11 @@ def main():
         # 验证
         val_loss = validate(model, val_loader, criterion, device)
         
+        # Add TensorBoard logging
+        writer.add_scalar('Loss/train', train_loss, epoch)
+        writer.add_scalar('Loss/val', val_loss, epoch)
+        writer.add_scalar('Learning_rate', optimizer.param_groups[0]['lr'], epoch)
+        
         print(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
         
         # 学习率调整
@@ -128,6 +136,9 @@ def main():
             best_val_loss = val_loss
             torch.save(model.state_dict(), 'best_model.pth')
             print("Saved best model!")
+    
+    # Close writer at the end
+    writer.close()
 
 
 if __name__ == "__main__":

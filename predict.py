@@ -4,7 +4,8 @@ import torchvision.transforms as transforms
 from model import TuduiModel
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 class ObjectDetector:
     def __init__(self, model_path, num_classes=20):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -42,7 +43,8 @@ class ObjectDetector:
         box_pred = predictions[0, 20:]
         
         # 获取最高置信度的类别
-        class_scores = torch.sigmoid(class_pred)
+        class_scores = torch.softmax(class_pred, dim=0)
+        # class_scores = torch.sigmoid(class_pred)
         max_score, predicted_class = torch.max(class_scores, 0)
         
         if max_score < conf_threshold:
@@ -123,7 +125,7 @@ if __name__ == '__main__':
     )
     
     # 预测单张图片
-    image_path = r"D:\xiaotudui\Dataset\VOC-2007\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages\000200.jpg"  # 替换为你的图片路径
+    image_path = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages\000035.jpg"  # 替换为你的图片路径
     detector.visualize(image_path, conf_threshold=0.1)
     
     # 如果只需要获取预测结果而不需要可视化

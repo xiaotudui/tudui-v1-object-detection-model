@@ -35,7 +35,6 @@ class TuduiModel(nn.Module):
 
         # 分离类别预测和边界框预测
         class_pred = x[:, :self.num_classes]  # 类别预测
-        # todo: drop???
         box_pred = torch.sigmoid(x[:, self.num_classes:])  # 边界框预测 (归一化到0-1)
 
         # 组合预测结果
