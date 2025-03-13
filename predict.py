@@ -125,8 +125,8 @@ if __name__ == '__main__':
     )
     
     # 预测单张图片
-    image_path = r"C:\Dataset\VOCtrainval_06-Nov-2007\VOCdevkit\VOC2007\JPEGImages\000035.jpg"  # 替换为你的图片路径
-    detector.visualize(image_path, conf_threshold=0.1)
+    image_path = r"../dataset/VOCdevkit/VOC2007/JPEGImages/000005.jpg"  # 替换为你的图片路径
+    detector.visualize(image_path, conf_threshold=0.1, save_path="./predict.png")
     
     # 如果只需要获取预测结果而不需要可视化
     bbox, class_name, confidence = detector.predict(image_path)

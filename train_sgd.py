@@ -47,7 +47,7 @@ def validate(model, dataloader, criterion, device):
 
 def main():
     # 设置设备
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
     
     # 超参数
     LEARNING_RATE = 1e-4
@@ -94,7 +94,7 @@ def main():
     
     # 定义损失函数和优化器
     criterion = DetectionLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
     
     # 学习率调度器
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -106,7 +106,7 @@ def main():
     # )
     
     # Create TensorBoard writer
-    writer = SummaryWriter('runs/adam_128_1e4_8000')
+    writer = SummaryWriter('runs/sgd_128_1e4_8000')
     
     # 训练循环
     best_val_loss = float('inf')
@@ -134,7 +134,7 @@ def main():
         # 保存最佳模型
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), 'best_model.pth')
+            torch.save(model.state_dict(), 'sgd_best_model.pth')
             print("Saved best model!")
     
     # Close writer at the end

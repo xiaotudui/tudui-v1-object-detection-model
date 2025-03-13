@@ -3,10 +3,10 @@ from torch import nn
 
 
 class TuduiModel(nn.Module):
-    def __init__(self, num_classes=20):
+    def __init__(self, num_classes = 20, num_pred_bbox = 1):
         super(TuduiModel, self).__init__()
         self.num_classes = num_classes
-
+        self.num_pred_bbox = num_pred_bbox
         self.conv_layers = nn.Sequential(
             nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -20,23 +20,19 @@ class TuduiModel(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
-
-        # 全连接层将特征映射到输出
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
             nn.Linear(64 * 52 * 52, 512),
             nn.ReLU(),
-            nn.Linear(512, num_classes + 4)  # num_classes个类别 + 4个边界框坐标
+            nn.Linear(512, self.num_pred_bbox * (num_classes + 4))
         )
 
     def forward(self, x):
         x = self.conv_layers(x)
         x = self.fc_layers(x)
-
         # 分离类别预测和边界框预测
         class_pred = x[:, :self.num_classes]  # 类别预测
         box_pred = torch.sigmoid(x[:, self.num_classes:])  # 边界框预测 (归一化到0-1)
-
         # 组合预测结果
         output = torch.cat([class_pred, box_pred], dim=1)
         return output
