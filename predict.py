@@ -5,6 +5,7 @@ from model import TuduiModel
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
+import random
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 class ObjectDetector:
     def __init__(self, model_path, num_classes=20):
@@ -116,21 +117,65 @@ class ObjectDetector:
         
         plt.show()
 
+    def predict_random_images(self, image_folder, n_images, output_folder, conf_threshold=0.5):
+        """
+        从指定文件夹中随机选择N张图片进行预测，并保存结果
+        
+        Args:
+            image_folder (str): 图片所在文件夹路径
+            n_images (int): 要预测的图片数量
+            output_folder (str): 预测结果保存的文件夹路径
+            conf_threshold (float): 置信度阈值
+        """
+        # 确保输出文件夹存在
+        os.makedirs(output_folder, exist_ok=True)
+        
+        # 获取所有图片文件
+        image_files = [f for f in os.listdir(image_folder) 
+                      if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        
+        # 如果图片数量不足，调整n_images
+        n_images = min(n_images, len(image_files))
+        
+        # 随机选择图片
+        selected_images = random.sample(image_files, n_images)
+        
+        print(f"将预测 {n_images} 张图片:")
+        
+        # 对每张图片进行预测
+        for i, image_file in enumerate(selected_images, 1):
+            image_path = os.path.join(image_folder, image_file)
+            save_path = os.path.join(output_folder, f"predict_{i}_{image_file}")
+            
+            print(f"\n处理第 {i}/{n_images} 张图片: {image_file}")
+            
+            # 进行预测和可视化
+            self.visualize(image_path, conf_threshold, save_path)
+            
+            # 获取详细的预测结果
+            bbox, class_name, confidence = self.predict(image_path, conf_threshold)
+            if bbox is not None:
+                print(f"检测到物体: {class_name}")
+                print(f"置信度: {confidence:.2f}")
+                print(f"边界框 (x, y, w, h): {bbox}")
+            else:
+                print("未检测到置信度足够高的物体")
 
 if __name__ == '__main__':
     # 使用示例
     detector = ObjectDetector(
-        model_path='best_model.pth',  # 替换为你的模型路径
+        model_path='sgd_momentum_best_model.pth',  # 替换为你的模型路径
         num_classes=20
     )
     
-    # 预测单张图片
-    image_path = r"../dataset/VOCdevkit/VOC2007/JPEGImages/000005.jpg"  # 替换为你的图片路径
-    detector.visualize(image_path, conf_threshold=0.1, save_path="./predict.png")
+    # 预测多张随机图片
+    image_folder = "../dataset/VOCdevkit/VOC2007/JPEGImages"  # 图片文件夹路径
+    output_folder = "./predict"  # 预测结果保存路径
+    n_images = 5  # 要预测的图片数量
     
-    # 如果只需要获取预测结果而不需要可视化
-    bbox, class_name, confidence = detector.predict(image_path)
-    if bbox is not None:
-        print(f"检测到物体: {class_name}")
-        print(f"置信度: {confidence:.2f}")
-        print(f"边界框 (x, y, w, h): {bbox}") 
+    detector.predict_random_images(
+        image_folder=image_folder,
+        n_images=n_images,
+        output_folder=output_folder,
+        conf_threshold=0.1
+    ) 
