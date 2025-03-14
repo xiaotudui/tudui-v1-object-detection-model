@@ -52,7 +52,7 @@ def main():
     # 超参数
     LEARNING_RATE = 1e-4
     BATCH_SIZE = 128
-    NUM_EPOCHS = 8000
+    NUM_EPOCHS = 1000
     
     # 数据集路径
     train_img_dir = r"../dataset/VOCdevkit/VOC2007/JPEGImages"
@@ -94,7 +94,7 @@ def main():
     
     # 定义损失函数和优化器
     criterion = DetectionLoss()
-    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=0.9)
     
     # 学习率调度器
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -106,7 +106,7 @@ def main():
     # )
     
     # Create TensorBoard writer
-    writer = SummaryWriter('runs/sgd_128_1e4_8000')
+    writer = SummaryWriter('runs/sgd_128_1e4_8000_sgd_momentum')
     
     # 训练循环
     best_val_loss = float('inf')
@@ -134,7 +134,7 @@ def main():
         # 保存最佳模型
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), 'sgd_best_model.pth')
+            torch.save(model.state_dict(), 'sgd_momentum_best_model.pth')
             print("Saved best model!")
     
     # Close writer at the end
